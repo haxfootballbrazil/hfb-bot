@@ -167,6 +167,9 @@ class GameCommands extends Module {
             }
         }
     }
+    private avaiableStadiums: [
+        "jets", "texans", "vikings", "falcons", "titans", "rams"
+    ]
 
     constructor(room: Room, private game: Game) {
         super();
@@ -771,6 +774,51 @@ class GameCommands extends Module {
         room.send({ message: `⚙️ ${$.caller.name} alternou os times`, color: Global.Color.Pink, style: "bold" });
 
         return false;
+    }
+    @Command({
+        name: "setstadium",
+    })
+    setStadiumCommand($: CommandInfo, room: Room) {
+        if (!$.caller.isAdmin()) {
+            $.caller.reply({ message: `⚠️ Você não é admin!`, sound: 2, color: Global.Color.Tomato, style: "bold" });
+
+            return false;
+        }
+        
+        if (room.isGameInProgress()) {
+            $.caller.reply({ message: `⚠️ Esse comando não pode ser utilizado durante o jogo!`, sound: 2, color: Global.Color.Tomato, style: "bold" });
+
+            return false;
+        }
+
+        const propertyStr = $.args[0].toLowerCase();
+
+        if (propertyStr === "list") {
+            const propList = this.avaiableStadiums
+
+            $.caller.reply({ message: `📙 Estadios disponiveis: (${propList.length}): ${propList.join(", ")}`, sound: 2, color: Global.Color.LimeGreen, style: "bold" });
+
+            return false;
+        } else if (propertyStr === "reset") {
+            room.setStadium(this.game.getDefaultMap());
+    
+            room.send({ message: `⚙️ ${$.caller.name} resetou o mapa`, color: Global.Color.Pink, style: "bold" });
+    
+            return false;
+        }
+        if (propertyStr == null ) {
+            $.caller.reply({ message: `⚠️ Você precisa escolher um estadio valido! Use ${room.prefix}setstadium list para ver a lista de estadios`, sound: 2, color: Global.Color.Tomato, style: "bold" });
+            
+            return false;
+        } else {
+            room.setStadium(JSON.parse(JSON.stringify(`../maps/${propertyStr}.json`)));
+    
+            room.send({ message: `⚙️ ${$.caller.name} mudou o mapa`, color: Global.Color.Pink, style: "bold" });
+    
+            return false;
+            
+        }
+
     }
 }
 
